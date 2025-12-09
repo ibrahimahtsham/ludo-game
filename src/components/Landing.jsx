@@ -18,7 +18,7 @@ function Landing({
   const canJoin = username.trim() && roomCode.trim().length === 6;
 
   return (
-    <Card>
+    <Card sx={{ maxWidth: 600, mx: "auto" }}>
       <CardContent>
         <Stack spacing={2}>
           <Typography variant="h4" align="center">
