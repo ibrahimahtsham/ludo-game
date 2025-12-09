@@ -155,6 +155,203 @@ const startByKey = Object.entries(starts).reduce((acc, [pid, pos]) => {
   return acc;
 }, {});
 
+// Garage blocks (token take-out areas), 2x2 per player
+const garages = {
+  p1: [
+    { r: 2, c: 2 },
+    { r: 2, c: 3 },
+    { r: 3, c: 2 },
+    { r: 3, c: 3 },
+  ],
+  p2: [
+    { r: 2, c: 11 },
+    { r: 2, c: 12 },
+    { r: 3, c: 11 },
+    { r: 3, c: 12 },
+  ],
+  p3: [
+    { r: 11, c: 11 },
+    { r: 11, c: 12 },
+    { r: 12, c: 11 },
+    { r: 12, c: 12 },
+  ],
+  p4: [
+    { r: 11, c: 2 },
+    { r: 11, c: 3 },
+    { r: 12, c: 2 },
+    { r: 12, c: 3 },
+  ],
+};
+const garageOwnerByKey = Object.entries(garages).reduce(
+  (acc, [pid, coords]) => {
+    coords.forEach((pos) => {
+      acc[`${pos.r}-${pos.c}`] = pid;
+    });
+    return acc;
+  },
+  {}
+);
+
+// Garage framing cells (explicit per cell)
+const garageFrames = {
+  p1: [
+    // top left corner
+    { r: 0, c: 0 },
+
+    // top edge
+    { r: 0, c: 1 },
+    { r: 0, c: 2 },
+    { r: 0, c: 3 },
+    { r: 0, c: 4 },
+
+    // top right corner
+    { r: 0, c: 5 },
+
+    // right edge
+    { r: 1, c: 5 },
+    { r: 2, c: 5 },
+    { r: 3, c: 5 },
+    { r: 4, c: 5 },
+
+    // bottom right corner
+    { r: 5, c: 5 },
+
+    // bottom edge
+    { r: 5, c: 4 },
+    { r: 5, c: 3 },
+    { r: 5, c: 2 },
+    { r: 5, c: 1 },
+
+    // bottom left corner
+    { r: 5, c: 0 },
+
+    // left edge
+    { r: 4, c: 0 },
+    { r: 3, c: 0 },
+    { r: 2, c: 0 },
+    { r: 1, c: 0 },
+  ],
+  p2: [
+    { r: 0, c: 9 },
+
+    // top edge
+    { r: 0, c: 10 },
+    { r: 0, c: 11 },
+    { r: 0, c: 12 },
+    { r: 0, c: 13 },
+
+    // top right corner
+    { r: 0, c: 14 },
+
+    // right edge
+    { r: 1, c: 14 },
+    { r: 2, c: 14 },
+    { r: 3, c: 14 },
+    { r: 4, c: 14 },
+
+    // bottom right corner
+    { r: 5, c: 14 },
+
+    // bottom edge
+    { r: 5, c: 13 },
+    { r: 5, c: 12 },
+    { r: 5, c: 11 },
+    { r: 5, c: 10 },
+
+    // bottom left corner
+    { r: 5, c: 9 },
+
+    // left edge
+    { r: 4, c: 9 },
+    { r: 3, c: 9 },
+    { r: 2, c: 9 },
+    { r: 1, c: 9 },
+  ],
+  p3: [
+    // top left corner
+    { r: 9, c: 9 },
+
+    // top edge
+    { r: 9, c: 10 },
+    { r: 9, c: 11 },
+    { r: 9, c: 12 },
+    { r: 9, c: 13 },
+
+    // top right corner
+    { r: 9, c: 14 },
+
+    // right edge
+    { r: 10, c: 14 },
+    { r: 11, c: 14 },
+    { r: 12, c: 14 },
+    { r: 13, c: 14 },
+
+    // bottom right corner
+    { r: 14, c: 14 },
+
+    // bottom edge
+    { r: 14, c: 13 },
+    { r: 14, c: 12 },
+    { r: 14, c: 11 },
+    { r: 14, c: 10 },
+
+    // bottom left corner
+    { r: 14, c: 9 },
+
+    // left edge
+    { r: 13, c: 9 },
+    { r: 12, c: 9 },
+    { r: 11, c: 9 },
+    { r: 10, c: 9 },
+  ],
+  p4: [
+    { r: 9, c: 0 },
+
+    // top edge
+    { r: 9, c: 1 },
+    { r: 9, c: 2 },
+    { r: 9, c: 3 },
+    { r: 9, c: 4 },
+
+    // top right corner
+    { r: 9, c: 5 },
+
+    // right edge
+    { r: 10, c: 5 },
+    { r: 11, c: 5 },
+    { r: 12, c: 5 },
+    { r: 13, c: 5 },
+
+    // bottom right corner
+    { r: 14, c: 5 },
+
+    // bottom edge
+    { r: 14, c: 4 },
+    { r: 14, c: 3 },
+    { r: 14, c: 2 },
+    { r: 14, c: 1 },
+
+    // bottom left corner
+    { r: 14, c: 0 },
+
+    // left edge
+    { r: 13, c: 0 },
+    { r: 12, c: 0 },
+    { r: 11, c: 0 },
+    { r: 10, c: 0 },
+  ],
+};
+
+const frameOwnerByKey = Object.entries(garageFrames).reduce(
+  (acc, [pid, coords]) => {
+    coords.forEach((pos) => {
+      acc[`${pos.r}-${pos.c}`] = pid;
+    });
+    return acc;
+  },
+  {}
+);
+
 const colors = {
   p1: "#e53935",
   p2: "#1e88e5",
@@ -169,6 +366,8 @@ function Board() {
     const laneOwner = laneOwnerByKey[key];
     const centerOwner = centerHomeByKey[key];
     const startOwner = startByKey[key];
+    const garageOwner = garageOwnerByKey[key];
+    const frameOwner = frameOwnerByKey[key];
 
     const color = isTrack
       ? "rgba(255,255,255,0.12)"
@@ -176,14 +375,21 @@ function Board() {
       ? `${colors[laneOwner]}55`
       : centerOwner
       ? `${colors[centerOwner]}aa`
+      : frameOwner
+      ? `${colors[frameOwner]}aa`
+      : garageOwner
+      ? "transparent"
       : "transparent";
 
-    const border =
-      isTrack || laneOwner || centerOwner || startOwner
-        ? `2px solid ${
-            startOwner ? colors[startOwner] : "rgba(255,255,255,0.25)"
-          }`
-        : "1px solid rgba(255,255,255,0.08)";
+    const border = startOwner
+      ? `2px solid ${colors[startOwner]}`
+      : garageOwner
+      ? `2px solid ${colors[garageOwner]}`
+      : frameOwner
+      ? `2px solid ${colors[frameOwner]}`
+      : isTrack || laneOwner || centerOwner
+      ? "1px solid rgba(255,255,255,0.25)"
+      : "1px solid rgba(255,255,255,0.08)";
 
     return (
       <Paper
