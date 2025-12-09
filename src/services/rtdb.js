@@ -86,6 +86,10 @@ export const startGame = async (code) => {
     acc[pid] = [-1, -1, -1, -1];
     return acc;
   }, {});
+  const consecutiveSixes = Object.keys(players).reduce((acc, pid) => {
+    acc[pid] = 0;
+    return acc;
+  }, {});
 
   const first = seatOrder.find((s) => players[s]);
 
@@ -98,6 +102,7 @@ export const startGame = async (code) => {
     },
     "game/winner": null,
     "game/lastRoll": null,
+    "game/consecutiveSixes": consecutiveSixes,
   });
 };
 
@@ -108,10 +113,27 @@ export const setReady = async (code, playerId, ready) => {
   });
 };
 
-export const rollDice = async (code, value, nextTurn) => {
+export const rollDice = async (
+  code,
+  { value, nextTurn, consecutiveSixes, lastRoll } = {}
+) => {
   const roomRef = child(roomsRoot, code);
-  const payload = { "game/lastRoll": value };
-  if (nextTurn) payload["game/currentTurn"] = nextTurn;
+  const payload = {};
+
+  if (lastRoll !== undefined) {
+    payload["game/lastRoll"] = lastRoll;
+  } else if (value !== undefined) {
+    payload["game/lastRoll"] = value;
+  }
+
+  if (nextTurn !== undefined) {
+    payload["game/currentTurn"] = nextTurn;
+  }
+
+  if (consecutiveSixes !== undefined) {
+    payload["game/consecutiveSixes"] = consecutiveSixes;
+  }
+
   await update(roomRef, payload);
 };
 

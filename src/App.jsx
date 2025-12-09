@@ -103,8 +103,50 @@ function App() {
 
   const handleRollDice = async () => {
     if (!roomCode || room?.game?.currentTurn !== playerId) return;
+    if (room?.game?.lastRoll != null) return; // prevent multiple rolls in one turn
+
     const value = Math.floor(Math.random() * 6) + 1;
-    await rollDice(roomCode, value, null);
+    const consecutive = room?.game?.consecutiveSixes || {};
+    const tokens = room?.game?.board?.tokens?.[playerId] || [];
+    const prev = consecutive[playerId] || 0;
+    const rolledSix = value === 6;
+    const nextCount = rolledSix ? prev + 1 : 0;
+
+    // Three 6s in a row: skip the rest of the turn
+    if (rolledSix && nextCount >= 3) {
+      const nextTurn = computeNextTurn();
+      const updatedCounts = { ...consecutive, [playerId]: 0 };
+      await rollDice(roomCode, {
+        lastRoll: null,
+        nextTurn,
+        consecutiveSixes: updatedCounts,
+      });
+      return;
+    }
+
+    const updatedCounts = { ...consecutive, [playerId]: nextCount };
+
+    // If no move is possible for this roll, auto-pass the turn
+    const hasAnyMove = tokens.some((pos) => {
+      if (pos === HOME) return rolledSix; // can only leave home on a 6
+      const candidate = pos + value;
+      return candidate <= FINISH;
+    });
+
+    if (!hasAnyMove) {
+      const nextTurn = computeNextTurn();
+      await rollDice(roomCode, {
+        lastRoll: null,
+        nextTurn,
+        consecutiveSixes: updatedCounts,
+      });
+      return;
+    }
+
+    await rollDice(roomCode, {
+      value,
+      consecutiveSixes: updatedCounts,
+    });
   };
 
   const computeNextTurn = () => {
@@ -143,7 +185,11 @@ function App() {
     tokensCopy[tokenIndex] = nextPos;
 
     const finished = tokensCopy.every((p) => p >= FINISH);
-    const nextTurn = finished ? null : computeNextTurn();
+    const nextTurn = finished
+      ? null
+      : lastRoll === 6
+      ? playerId // extra turn on rolling 6 (unless finished)
+      : computeNextTurn();
 
     await moveToken(
       roomCode,

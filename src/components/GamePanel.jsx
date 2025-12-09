@@ -11,7 +11,7 @@ import { playerColors } from "../constants/players";
 function GamePanel({ room, playerId, onRoll, onMoveToken }) {
   const turn = room?.game?.currentTurn;
   const lastRoll = room?.game?.lastRoll ?? "-";
-  const canRoll = turn === playerId;
+  const canRoll = turn === playerId && room?.game?.lastRoll == null;
   const players = room?.players || {};
   const board = room?.game?.board;
 

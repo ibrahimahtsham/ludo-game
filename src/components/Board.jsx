@@ -2,6 +2,7 @@ import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { HOME, TRACK_LENGTH } from "../constants/game";
 
 const GRID_SIZE = 15;
 
@@ -154,6 +155,13 @@ const startByKey = Object.entries(starts).reduce((acc, [pid, pos]) => {
   acc[`${pos.r}-${pos.c}`] = pid;
   return acc;
 }, {});
+
+const startIndexByPlayer = Object.fromEntries(
+  Object.entries(starts).map(([pid, pos]) => {
+    const idx = trackCoords.findIndex((p) => p.r === pos.r && p.c === pos.c);
+    return [pid, idx >= 0 ? idx : 0];
+  })
+);
 
 // Garage blocks (token take-out areas), 2x2 per player
 const garages = {
@@ -358,8 +366,48 @@ const colors = {
   p3: "#43a047",
   p4: "#fbc02d",
 };
+const tokenSlots = [
+  { top: "8%", left: "8%" },
+  { top: "8%", right: "8%" },
+  { bottom: "8%", left: "8%" },
+  { bottom: "8%", right: "8%" },
+];
 
-function Board() {
+const posToCoord = (pid, pos, tokenIndex) => {
+  if (pos === HOME) {
+    const garageCells = garages[pid];
+    return garageCells ? garageCells[tokenIndex % garageCells.length] : null;
+  }
+
+  if (pos >= 0 && pos < TRACK_LENGTH) {
+    const startOffset = startIndexByPlayer[pid] || 0;
+    const idx = (startOffset + pos) % TRACK_LENGTH;
+    return trackCoords[idx];
+  }
+
+  if (pos >= TRACK_LENGTH) {
+    const laneIdx = pos - TRACK_LENGTH;
+    const lane = homeLanes[pid] || [];
+    if (laneIdx < lane.length) return lane[laneIdx];
+    if (laneIdx === lane.length) return centerHomes[pid];
+  }
+
+  return null;
+};
+
+function Board({ board, playerId, onTokenClick }) {
+  const tokensByCell = {};
+
+  Object.entries(board?.tokens || {}).forEach(([pid, tokenPositions]) => {
+    tokenPositions.forEach((pos, idx) => {
+      const coord = posToCoord(pid, pos, idx);
+      if (!coord) return;
+      const key = `${coord.r}-${coord.c}`;
+      if (!tokensByCell[key]) tokensByCell[key] = [];
+      tokensByCell[key].push({ pid, tokenIndex: idx });
+    });
+  });
+
   const renderCell = (r, c) => {
     const key = `${r}-${c}`;
     const isTrack = trackKeys.has(key);
@@ -391,6 +439,9 @@ function Board() {
       ? "1px solid rgba(255,255,255,0.25)"
       : "1px solid rgba(255,255,255,0.08)";
 
+    const tokens = tokensByCell[key] || [];
+    const showCountOnly = tokens.length > tokenSlots.length;
+
     return (
       <Paper
         key={key}
@@ -400,8 +451,63 @@ function Board() {
           bgcolor: color,
           border,
           boxSizing: "border-box",
+          position: "relative",
         }}
-      />
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+          }}
+        >
+          {showCountOnly ? (
+            <Typography
+              variant="caption"
+              sx={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: 700,
+                color: "white",
+              }}
+            >
+              {tokens.length}
+            </Typography>
+          ) : (
+            tokens.map((t, idx) => {
+              const slot = tokenSlots[idx];
+              const clickable =
+                t.pid === playerId && typeof onTokenClick === "function";
+              return (
+                <Box
+                  key={`${t.pid}-${t.tokenIndex}`}
+                  onClick={
+                    clickable
+                      ? (e) => {
+                          e.stopPropagation();
+                          onTokenClick(t.tokenIndex);
+                        }
+                      : undefined
+                  }
+                  sx={{
+                    position: "absolute",
+                    width: "44%",
+                    height: "44%",
+                    borderRadius: "50%",
+                    bgcolor: colors[t.pid] || "white",
+                    border: "2px solid rgba(0,0,0,0.4)",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.35)",
+                    cursor: clickable ? "pointer" : "default",
+                    ...slot,
+                  }}
+                />
+              );
+            })
+          )}
+        </Box>
+      </Paper>
     );
   };
 
