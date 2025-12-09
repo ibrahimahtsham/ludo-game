@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import CssBaseline from "@mui/material/CssBaseline";
 import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import ChatBox from "./components/ChatBox";
 import Landing from "./components/Landing";
@@ -121,6 +122,11 @@ function App() {
         nextTurn,
         consecutiveSixes: updatedCounts,
       });
+      await sendChatMessage(roomCode, {
+        from: username || playerId,
+        text: `rolled 6 (third in a row, turn skipped)`,
+        at: Date.now(),
+      });
       return;
     }
 
@@ -140,12 +146,23 @@ function App() {
         nextTurn,
         consecutiveSixes: updatedCounts,
       });
+      await sendChatMessage(roomCode, {
+        from: username || playerId,
+        text: `rolled ${value} (no moves, turn passed)`,
+        at: Date.now(),
+      });
       return;
     }
 
     await rollDice(roomCode, {
       value,
       consecutiveSixes: updatedCounts,
+    });
+
+    await sendChatMessage(roomCode, {
+      from: username || playerId,
+      text: `rolled ${value}`,
+      at: Date.now(),
     });
   };
 
@@ -212,53 +229,51 @@ function App() {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      <Grid
-        container
-        justifyContent="center"
-        sx={{ minHeight: "100vh", py: 4 }}
-      >
-        <Grid item xs={11} sm={10} md={8} lg={7}>
-          {showLanding ? (
-            <Landing
-              username={username}
-              onUsernameChange={setUsername}
-              roomCode={roomCodeInput}
-              onRoomCodeChange={setRoomCodeInput}
-              onHost={handleCreateRoom}
-              onJoin={handleJoinRoom}
-              error={error}
-            />
-          ) : gameActive ? (
-            <GamePanel
-              room={room}
-              playerId={playerId}
-              onRoll={handleRollDice}
-              onMoveToken={handleMoveToken}
-            />
-          ) : (
-            <Stack spacing={3}>
-              {room && (
-                <Lobby
-                  roomCode={roomCode}
-                  playerId={playerId}
-                  room={room}
-                  onReadyToggle={handleReadyToggle}
-                  onStart={handleStartGame}
-                />
-              )}
+      <Box sx={{ minHeight: "100vh", px: { xs: 1.5, sm: 2 }, py: 3 }}>
+        {showLanding ? (
+          <Landing
+            username={username}
+            onUsernameChange={setUsername}
+            roomCode={roomCodeInput}
+            onRoomCodeChange={setRoomCodeInput}
+            onHost={handleCreateRoom}
+            onJoin={handleJoinRoom}
+            error={error}
+          />
+        ) : gameActive ? (
+          <GamePanel
+            room={room}
+            playerId={playerId}
+            onRoll={handleRollDice}
+            onMoveToken={handleMoveToken}
+            chat={room?.chat}
+            message={chatMessage}
+            onMessageChange={setChatMessage}
+            onSend={handleSendChat}
+          />
+        ) : (
+          <Stack spacing={3}>
+            {room && (
+              <Lobby
+                roomCode={roomCode}
+                playerId={playerId}
+                room={room}
+                onReadyToggle={handleReadyToggle}
+                onStart={handleStartGame}
+              />
+            )}
 
-              {room && (
-                <ChatBox
-                  chat={room.chat}
-                  message={chatMessage}
-                  onMessageChange={setChatMessage}
-                  onSend={handleSendChat}
-                />
-              )}
-            </Stack>
-          )}
-        </Grid>
-      </Grid>
+            {room && (
+              <ChatBox
+                chat={room.chat}
+                message={chatMessage}
+                onMessageChange={setChatMessage}
+                onSend={handleSendChat}
+              />
+            )}
+          </Stack>
+        )}
+      </Box>
     </ThemeProvider>
   );
 }

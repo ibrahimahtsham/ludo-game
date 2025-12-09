@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
@@ -11,6 +11,15 @@ function ChatBox({ chat = {}, message, onMessageChange, onSend }) {
       .map(([id, entry]) => ({ id, ...entry }))
       .sort((a, b) => (a.at || 0) - (b.at || 0));
   }, [chat]);
+
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) {
+      el.scrollTop = el.scrollHeight;
+    }
+  }, [messages.length]);
 
   return (
     <Box sx={{ mt: 3 }}>
@@ -27,6 +36,7 @@ function ChatBox({ chat = {}, message, onMessageChange, onSend }) {
           overflowY: "auto",
           backgroundColor: "rgba(255,255,255,0.02)",
         }}
+        ref={scrollRef}
       >
         {messages.length === 0 && (
           <Typography variant="body2" color="text.secondary">

@@ -515,6 +515,11 @@ function Board({ board, playerId, onTokenClick }) {
     <Stack spacing={2}>
       <Box
         sx={{
+          width: "100%",
+          maxWidth: "100%",
+          mx: "auto",
+          aspectRatio: "1 / 1",
+          minHeight: { xs: 360, sm: 520, md: 640, lg: 760 },
           border: "1px solid rgba(255,255,255,0.12)",
           borderRadius: 1,
           p: 1,
