@@ -519,7 +519,7 @@ function Board({ board, playerId, onTokenClick }) {
           maxWidth: "100%",
           mx: "auto",
           aspectRatio: "1 / 1",
-          minHeight: { xs: 360, sm: 520, md: 640, lg: 760 },
+          minWidth: 700,
           border: "1px solid rgba(255,255,255,0.12)",
           borderRadius: 1,
           p: 1,
