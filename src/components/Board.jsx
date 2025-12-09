@@ -127,6 +127,34 @@ const laneOwnerByKey = Object.entries(homeLanes).reduce(
   {}
 );
 
+// Final home cells (one per color)
+const centerHomes = {
+  p1: { r: 7, c: 6 }, // left of center
+  p2: { r: 6, c: 7 }, // above center
+  p3: { r: 7, c: 8 }, // right of center
+  p4: { r: 8, c: 7 }, // below center
+};
+const centerHomeByKey = Object.entries(centerHomes).reduce(
+  (acc, [pid, pos]) => {
+    acc[`${pos.r}-${pos.c}`] = pid;
+    return acc;
+  },
+  {}
+);
+
+// Start cells (one per color) on the loop
+const starts = {
+  p1: { r: 6, c: 1 }, // left entry
+  p2: { r: 1, c: 8 }, // top entry
+  p3: { r: 8, c: 13 }, // right entry
+  p4: { r: 13, c: 6 }, // bottom entry
+};
+
+const startByKey = Object.entries(starts).reduce((acc, [pid, pos]) => {
+  acc[`${pos.r}-${pos.c}`] = pid;
+  return acc;
+}, {});
+
 const colors = {
   p1: "#e53935",
   p2: "#1e88e5",
@@ -139,19 +167,22 @@ function Board() {
     const key = `${r}-${c}`;
     const isTrack = trackKeys.has(key);
     const laneOwner = laneOwnerByKey[key];
-    const isCenter = r >= 6 && r <= 8 && c >= 6 && c <= 8;
+    const centerOwner = centerHomeByKey[key];
+    const startOwner = startByKey[key];
 
     const color = isTrack
       ? "rgba(255,255,255,0.12)"
       : laneOwner
       ? `${colors[laneOwner]}55`
-      : isCenter
-      ? "rgba(255,255,255,0.16)"
+      : centerOwner
+      ? `${colors[centerOwner]}aa`
       : "transparent";
 
     const border =
-      isTrack || laneOwner || isCenter
-        ? "1px solid rgba(255,255,255,0.25)"
+      isTrack || laneOwner || centerOwner || startOwner
+        ? `2px solid ${
+            startOwner ? colors[startOwner] : "rgba(255,255,255,0.25)"
+          }`
         : "1px solid rgba(255,255,255,0.08)";
 
     return (
@@ -162,6 +193,7 @@ function Board() {
           aspectRatio: "1 / 1",
           bgcolor: color,
           border,
+          boxSizing: "border-box",
         }}
       />
     );
