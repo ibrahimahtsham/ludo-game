@@ -38,25 +38,24 @@ function GamePanel({
       <CardContent>
         <Grid container spacing={2} alignItems="stretch">
           <Grid item xs={12} md={3} lg={3}>
-            <Stack spacing={2} sx={{ height: "100%" }}>
+            <Stack spacing={1.25} sx={{ height: "100%" }}>
               <Typography variant="h6">Players</Typography>
-              <Grid container spacing={1}>
+              <Stack spacing={1}>
                 {playerEntries.map(([id, info]) => (
-                  <Grid item xs={12} key={id}>
-                    <Card
-                      variant="outlined"
-                      sx={{ bgcolor: playerColors[id], color: "black" }}
-                    >
-                      <CardContent sx={{ textAlign: "center", py: 2 }}>
-                        <Typography variant="subtitle1" fontWeight={700}>
-                          {info.username || id}
-                        </Typography>
-                        <Typography variant="body2">Your color</Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
+                  <Card
+                    key={id}
+                    variant="outlined"
+                    sx={{ bgcolor: playerColors[id], color: "black" }}
+                  >
+                    <CardContent sx={{ textAlign: "center", py: 2 }}>
+                      <Typography variant="subtitle1" fontWeight={700}>
+                        {info.username || id}
+                      </Typography>
+                      <Typography variant="body2">Your color</Typography>
+                    </CardContent>
+                  </Card>
                 ))}
-              </Grid>
+              </Stack>
             </Stack>
           </Grid>
 
@@ -117,6 +116,7 @@ function GamePanel({
                           message={message}
                           onMessageChange={onMessageChange}
                           onSend={onSend}
+                          fillHeight
                         />
                       </Stack>
                     </CardContent>
