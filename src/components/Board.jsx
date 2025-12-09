@@ -407,7 +407,6 @@ function Board() {
 
   return (
     <Stack spacing={2}>
-      <Typography variant="h6">Board (path only)</Typography>
       <Box
         sx={{
           border: "1px solid rgba(255,255,255,0.12)",
