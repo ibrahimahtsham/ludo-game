@@ -1,0 +1,24 @@
+{
+  "rules": {
+    "rooms": {
+      "$code": {
+        ".read": true,
+        ".write": "newData.child('players').childrenCount() <= 4",
+        "players": {
+          "$pid": {
+            ".validate": "newData.hasChildren(['username','joinedAt','ready']) && newData.child('username').isString() && newData.child('username').val().length <= 20 && newData.child('ready').isBoolean()"
+          }
+        },
+        "chat": {
+          "$msg": {
+            ".validate": "newData.hasChildren(['from','text','at']) && newData.child('text').isString() && newData.child('text').val().length <= 200 && newData.child('from').isString()"
+          }
+        },
+        "game": {
+          "currentTurn": { ".validate": "newData.isString()" },
+          "lastRoll": { ".validate": "newData.isNumber()" }
+        }
+      }
+    }
+  }
+}
