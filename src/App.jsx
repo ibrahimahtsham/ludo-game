@@ -36,9 +36,14 @@ function App() {
   const [chatMessage, setChatMessage] = useState("");
   const [error, setError] = useState("");
 
+  const placements = room?.game?.placements || [];
   const activePlayers = useMemo(
     () => seatOrder.filter((s) => room?.players?.[s]),
     [room]
+  );
+  const remainingPlayers = useMemo(
+    () => activePlayers.filter((p) => !placements.includes(p)),
+    [activePlayers, placements]
   );
 
   useEffect(() => {
@@ -182,7 +187,7 @@ function App() {
   };
 
   const computeNextTurn = () => {
-    const order = activePlayers;
+    const order = remainingPlayers;
     const current = room?.game?.currentTurn;
     const idx = order.indexOf(current);
     return order.length > 0 ? order[(idx + 1) % order.length] : null;
@@ -237,11 +242,21 @@ function App() {
     tokensCopy[tokenIndex] = nextPos;
 
     const finished = tokensCopy.every((p) => p >= FINISH);
+    const alreadyPlaced = placements.includes(playerId);
+    const newPlacements =
+      finished && !alreadyPlaced ? [...placements, playerId] : placements;
+
+    const remainingAfterFinish = finished
+      ? remainingPlayers.filter((p) => p !== playerId)
+      : remainingPlayers;
+
     const nextTurn = finished
-      ? null
+      ? remainingAfterFinish[0] || null
       : lastRoll === 6
       ? playerId // extra turn on rolling 6 (unless finished)
       : computeNextTurn();
+
+    const winner = newPlacements.length === 1 ? newPlacements[0] : null;
 
     await moveToken(
       roomCode,
@@ -249,7 +264,8 @@ function App() {
       tokenIndex,
       nextPos,
       nextTurn,
-      finished ? playerId : null
+      finished ? winner : null,
+      newPlacements
     );
   };
 

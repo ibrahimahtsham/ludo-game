@@ -101,6 +101,7 @@ export const startGame = async (code) => {
       tokens,
     },
     "game/winner": null,
+    "game/placements": [],
     "game/lastRoll": null,
     "game/consecutiveSixes": consecutiveSixes,
   });
@@ -143,7 +144,8 @@ export const moveToken = async (
   tokenIndex,
   newPos,
   nextTurn,
-  winner
+  winner,
+  placements
 ) => {
   const roomRef = child(roomsRoot, code);
   const updates = {
@@ -152,5 +154,6 @@ export const moveToken = async (
   };
   if (nextTurn) updates["game/currentTurn"] = nextTurn;
   if (winner) updates["game/winner"] = winner;
+  if (placements) updates["game/placements"] = placements;
   await update(roomRef, updates);
 };

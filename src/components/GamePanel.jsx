@@ -9,6 +9,13 @@ import Board from "./Board";
 import ChatBox from "./ChatBox";
 import { playerColors } from "../constants/players";
 
+const ordinal = (n) => {
+  if (n === 1) return "1st";
+  if (n === 2) return "2nd";
+  if (n === 3) return "3rd";
+  return `${n}th`;
+};
+
 function GamePanel({
   room,
   playerId,
@@ -24,6 +31,7 @@ function GamePanel({
   const canRoll = turn === playerId && room?.game?.lastRoll == null;
   const players = room?.players || {};
   const board = room?.game?.board;
+  const placements = room?.game?.placements || [];
 
   const playerEntries = Object.entries(players);
 
@@ -55,20 +63,34 @@ function GamePanel({
             <Stack spacing={1.25} sx={{ height: "100%" }}>
               <Typography variant="h6">Players</Typography>
               <Stack spacing={1}>
-                {playerEntries.map(([id, info]) => (
-                  <Card
-                    key={id}
-                    variant="outlined"
-                    sx={{ bgcolor: playerColors[id], color: "black" }}
-                  >
-                    <CardContent sx={{ textAlign: "center", py: 2 }}>
-                      <Typography variant="subtitle1" fontWeight={700}>
-                        {info.username || id}
-                      </Typography>
-                      <Typography variant="body2">Your color</Typography>
-                    </CardContent>
-                  </Card>
-                ))}
+                {playerEntries.map(([id, info]) => {
+                  const placeIdx = placements.indexOf(id);
+                  const placed = placeIdx >= 0;
+                  const placeLabel = placed
+                    ? `${ordinal(placeIdx + 1)} place`
+                    : "Playing";
+                  return (
+                    <Card
+                      key={id}
+                      variant="outlined"
+                      sx={{
+                        bgcolor: playerColors[id],
+                        color: "black",
+                        border: placed ? "2px solid gold" : undefined,
+                        boxShadow: placed
+                          ? "0 0 12px rgba(255,215,0,0.6)"
+                          : undefined,
+                      }}
+                    >
+                      <CardContent sx={{ textAlign: "center", py: 2 }}>
+                        <Typography variant="subtitle1" fontWeight={700}>
+                          {info.username || id}
+                        </Typography>
+                        <Typography variant="body2">{placeLabel}</Typography>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </Stack>
             </Stack>
           </Grid>
