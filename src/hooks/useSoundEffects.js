@@ -58,6 +58,14 @@ export function useSoundEffects() {
     ]);
   }, [playSequence]);
 
+  const playRollSix = useCallback(() => {
+    playSequence([
+      { freq: 180, duration: 0.08, type: "square", gain: 0.16 },
+      { freq: 260, duration: 0.08, type: "square", gain: 0.18, delay: 0.06 },
+      { freq: 420, duration: 0.1, type: "triangle", gain: 0.2, delay: 0.12 },
+    ]);
+  }, [playSequence]);
+
   const playMove = useCallback(() => {
     playSequence([
       { freq: 360, duration: 0.08, type: "sine", gain: 0.2 },
@@ -83,6 +91,7 @@ export function useSoundEffects() {
 
   return {
     playRoll,
+    playRollSix,
     playMove,
     playHome,
     playWin,

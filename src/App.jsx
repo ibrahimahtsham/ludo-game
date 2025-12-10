@@ -36,7 +36,8 @@ function App() {
   const [room, setRoom] = useState(null);
   const [chatMessage, setChatMessage] = useState("");
   const [error, setError] = useState("");
-  const { playRoll, playMove, playHome, playWin } = useSoundEffects();
+  const { playRoll, playRollSix, playMove, playHome, playWin } =
+    useSoundEffects();
 
   const placements = room?.game?.placements || [];
   const activePlayers = useMemo(
@@ -113,8 +114,12 @@ function App() {
     if (!roomCode || room?.game?.currentTurn !== playerId) return;
     if (room?.game?.lastRoll != null) return; // prevent multiple rolls in one turn
 
-    playRoll();
     const value = Math.floor(Math.random() * 6) + 1;
+    if (value === 6) {
+      playRollSix();
+    } else {
+      playRoll();
+    }
     const consecutive = room?.game?.consecutiveSixes || {};
     const tokens = room?.game?.board?.tokens?.[playerId] || [];
     const prev = consecutive[playerId] || 0;
