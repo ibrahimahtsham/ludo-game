@@ -32,7 +32,7 @@ function ChatBox({ chat = {}, message, onMessageChange, onSend }) {
           borderRadius: 1,
           p: 2,
           minHeight: 160,
-          maxHeight: 240,
+          maxHeight: 550,
           overflowY: "auto",
           backgroundColor: "rgba(255,255,255,0.02)",
         }}
