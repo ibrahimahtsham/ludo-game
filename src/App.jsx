@@ -19,7 +19,7 @@ import {
   setReady,
   moveToken,
 } from "./services/rtdb";
-import { FINISH, HOME, TRACK_LENGTH } from "./constants/game";
+import { FINISH, HOME, TRACK_LENGTH, HOME_LANE_LENGTH } from "./constants/game";
 
 const darkTheme = createTheme({
   palette: {
@@ -133,10 +133,25 @@ function App() {
     const updatedCounts = { ...consecutive, [playerId]: nextCount };
 
     // If no move is possible for this roll, auto-pass the turn
+    const entryIndex = TRACK_LENGTH - 2; // relative index 50 is home entry
     const hasAnyMove = tokens.some((pos) => {
-      if (pos === HOME) return rolledSix; // can only leave home on a 6
-      const candidate = pos + value;
-      return candidate <= FINISH;
+      if (pos === HOME) return rolledSix; // must roll 6 to leave garage
+
+      if (pos < entryIndex) {
+        const stepsToEntry = entryIndex - pos;
+        if (value <= stepsToEntry) return true; // still on loop
+        const laneSteps = value - stepsToEntry - 1; // step into lane cell 0
+        return laneSteps < HOME_LANE_LENGTH; // can land inside lane
+      }
+
+      if (pos === entryIndex) {
+        const laneSteps = value - 1; // first step enters lane
+        return laneSteps < HOME_LANE_LENGTH;
+      }
+
+      // In home lane
+      const laneIdx = pos - TRACK_LENGTH;
+      return laneIdx + value < HOME_LANE_LENGTH; // cannot overshoot center
     });
 
     if (!hasAnyMove) {
@@ -183,19 +198,39 @@ function App() {
     const currentPos = tokens[tokenIndex];
 
     let nextPos = currentPos;
+    const entryIndex = TRACK_LENGTH - 2; // relative index 50 is home entry
+
     if (currentPos === HOME) {
+      // Leaving garage requires a 6
       if (lastRoll === 6) {
         nextPos = 0;
       } else {
-        return; // can't move out
+        return;
+      }
+    } else if (currentPos < TRACK_LENGTH) {
+      if (currentPos < entryIndex) {
+        const stepsToEntry = entryIndex - currentPos;
+        if (lastRoll <= stepsToEntry) {
+          nextPos = currentPos + lastRoll; // stay on loop
+        } else {
+          const laneSteps = lastRoll - stepsToEntry - 1; // first step enters lane0
+          if (laneSteps >= HOME_LANE_LENGTH) return; // overshoots center
+          nextPos = TRACK_LENGTH + laneSteps;
+        }
+      } else if (currentPos === entryIndex) {
+        const laneSteps = lastRoll - 1;
+        if (laneSteps >= HOME_LANE_LENGTH) return; // overshoots center
+        nextPos = TRACK_LENGTH + laneSteps;
+      } else {
+        // Should never be > entryIndex on loop, but guard anyway
+        return;
       }
     } else {
-      const candidate = currentPos + lastRoll;
-      if (candidate <= FINISH) {
-        nextPos = candidate;
-      } else {
-        return; // cannot overshoot
-      }
+      // In home lane already
+      const laneIdx = currentPos - TRACK_LENGTH;
+      const candidateLane = laneIdx + lastRoll;
+      if (candidateLane >= HOME_LANE_LENGTH) return; // cannot overshoot center
+      nextPos = TRACK_LENGTH + candidateLane;
     }
 
     const tokensCopy = [...tokens];
