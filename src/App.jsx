@@ -20,6 +20,7 @@ import {
   moveToken,
 } from "./services/rtdb";
 import { FINISH, HOME, TRACK_LENGTH, HOME_LANE_LENGTH } from "./constants/game";
+import { useSoundEffects } from "./hooks/useSoundEffects";
 
 const darkTheme = createTheme({
   palette: {
@@ -35,6 +36,7 @@ function App() {
   const [room, setRoom] = useState(null);
   const [chatMessage, setChatMessage] = useState("");
   const [error, setError] = useState("");
+  const { playRoll, playMove, playHome, playWin } = useSoundEffects();
 
   const placements = room?.game?.placements || [];
   const activePlayers = useMemo(
@@ -111,6 +113,7 @@ function App() {
     if (!roomCode || room?.game?.currentTurn !== playerId) return;
     if (room?.game?.lastRoll != null) return; // prevent multiple rolls in one turn
 
+    playRoll();
     const value = Math.floor(Math.random() * 6) + 1;
     const consecutive = room?.game?.consecutiveSixes || {};
     const tokens = room?.game?.board?.tokens?.[playerId] || [];
@@ -238,6 +241,8 @@ function App() {
       nextPos = TRACK_LENGTH + candidateLane;
     }
 
+    const reachedHome = nextPos >= FINISH;
+
     const tokensCopy = [...tokens];
     tokensCopy[tokenIndex] = nextPos;
 
@@ -257,6 +262,14 @@ function App() {
       : computeNextTurn();
 
     const winner = newPlacements.length === 1 ? newPlacements[0] : null;
+
+    playMove();
+    if (reachedHome) {
+      playHome();
+    }
+    if (winner) {
+      playWin();
+    }
 
     await moveToken(
       roomCode,
